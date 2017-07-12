@@ -1,0 +1,162 @@
+---
+title: "Course 9 - Week 2"
+author: "Karan Gambhir"
+date: "July 12, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Real data of "Alcalá de Henares"" City - Madrid
+
+Create a Matrix with data from POIs of my City.
+```{r c1, echo=TRUE}
+data1 <- matrix( NA,nrow=17, ncol=5)
+
+# This part should be done with a LOCAL FILE, instead of raw data,
+# but now, will work in every PC.
+
+# Lat, Long, Text, Size of Relevance, COLOR/ICON
+z <- 
+c( 
+40.4824856,-3.3654235,"Citihall",40,3,
+40.4862768,-3.3801755,"Train1",30,1,
+40.4816673,-3.3931257,"Train2",20,1,
+40.5043139,-3.3386647,"Train3",5,1,
+40.5052149,-3.3337398,"Shops1",15,2,
+40.5029097,-3.3337295,"Shops2",20,2,
+40.5037812,-3.3669145,"Shops3",40,2,
+40.4797781,-3.3998195,"Shops4",50,2,
+40.4760156,-3.3939596,"Shops5",40,2,
+40.4802155,-3.3783789,"Shops6",30,2,
+40.4936141,-3.3670312,"Shops7",40,2,
+40.4824591,-3.3911546,"Education1",10,4,
+40.4829104,-3.3895981,"Education2",10,4,
+40.4936536,-3.3798743,"Education3",10,4,
+40.4936844,-3.3779865,"Education4",10,4,
+40.4910783,-3.3745762,"Education5",10,4,
+40.4869168,-3.3853926,"FireStation",5,5
+)
+
+cual2 <- 1
+for (cual in seq( from=1,to=82,by=5)){
+   data1[cual2,1] <- z[cual]
+   data1[cual2,2] <- z[cual+1]
+   data1[cual2,3] <- z[cual+2]
+   data1[cual2,4] <- z[cual+3]
+   data1[cual2,5] <- z[cual+4]
+   cual2 <- cual2 + 1
+}
+
+cual3 <- data.frame(cual2)
+```
+
+
+## Map 
+Prepare map and add POIs, information was obtained 2 months ago.
+Data updated time:
+```{r c2b, echo=FALSE}
+Sys.time()
+```
+
+Map showing POI's
+```{r c2, echo=FALSE}
+library(leaflet)
+library(dplyr)
+
+colores <- c("#0040FF","#ff60FF","#01DF01","#DF3A01","#088A4B")
+
+my_map <- leaflet() %>% addTiles() 
+my_map <- my_map %>% setView( lat=data1[1,1], lng=data1[1,2], zoom=13 )
+
+for (cual in seq( from=1,to=17)){
+   my_map <- my_map %>% addTiles() %>% 
+     addMarkers(lat=data1[cual,1] , lng=data1[cual,2] , popup=paste("<b>",as.character(data1[cual,3]),
+       "</b><br><a href='http://www.ayto-alcaladehenares.es/", as.character(data1[cual,3]) ,".html'>Link to Site</a>" ))
+
+   my_map <- my_map %>% addCircleMarkers(lat = data1[cual,1] , lng = data1[cual,2] , 
+             weight =(data1[cual,4]), color=(colores[ as.integer(data1[cual,5]) ]) )
+}
+
+# my_map <- my_map %>% addMarkers(clusterOptions = markerClusterOptions() )
+
+my_map <- my_map %>% addLegend("bottomright",  colors=colores,  labels=c("Train","Shop","CityHall","Educ","FireStation"), title="Alcalá de Henares")
+
+# my_map <- my_map %>% addMarkers( clusterOptions = markerClusterOptions() )
+
+
+my_map
+```
+
+## Map with Water points in Alcalá de Henares
+Shopping places in AdH.
+```{r c3, echo=FALSE}
+library(leaflet)
+library(dplyr)
+library(sp)
+
+my_map <- leaflet() %>% addTiles() 
+my_map <- my_map %>% setView( lat=data1[1,1], lng=data1[1,2], zoom=16 )
+
+for (cual in seq( from=1,to=1)){
+     my_map <- my_map %>% addTiles() %>% 
+     addMarkers(lat=data1[cual,1] , lng=data1[cual,2] , popup=paste("<b>",as.character(data1[cual,3]),
+       "</b><br><a href='http://www.ayto-alcaladehenares.es/", as.character(data1[cual,3]) ,".html'>Link to Site</a>" ))
+
+      # my_map <- my_map %>% addMarkers(lat= data1[cual,1] , lng=data1[cual,2] , icon=data1[cual,3])
+}
+
+# my_map <- my_map %>% addMarkers(clusterOptions = markerClusterOptions() )
+
+my_map <- my_map %>% addLegend("bottomright", colors=c("#ff60FF"), label=c("CitiHall"), title="Alcalá de Henares")
+my_map
+
+
+Sr1 = Polygon(cbind(c(2, 4, 4, 1, 2), c(2, 3, 5, 4, 2)))
+Sr2 = Polygon(cbind(c(5, 4, 2, 5), c(2, 3, 2, 2)))
+Sr3 = Polygon(cbind(c(4, 4, 5, 10, 4), c(5, 3, 2, 5, 5)))
+Sr4 = Polygon(cbind(c(5, 6, 6, 5, 5), c(4, 4, 3, 3, 4)), hole = TRUE)
+Srs1 = Polygons(list(Sr1), "s1")
+Srs2 = Polygons(list(Sr2), "s2")
+Srs3 = Polygons(list(Sr4, Sr3), "s3/4")
+SpP = SpatialPolygons(list(Srs1, Srs2, Srs3), 1:3)
+leaflet(height = "300px") %>% addPolygons(data = SpP)
+
+
+library(maps)
+mapStates = map(database="state", fill = TRUE, plot = FALSE)
+leaflet(data = mapStates) %>% addTiles() %>%
+  addPolygons(fillColor = topo.colors(10, alpha = NULL), stroke = FALSE)
+
+
+```
+
+
+## Votes from the last Elections
+```{r votes}
+# https://procomun.wordpress.com/2012/02/18/maps_with_r_1/
+#library(maps)
+# library(maptools)
+#library(sp)
+#library(lattice)
+#library(latticeExtra)
+#library(colorspace)
+
+#load(url('http://dl.dropbox.com/u/40293713/spainVotes/votos2011.rda'))
+# votesData <- votos2011[, 12:1023] ##I don't need all the columns
+ 
+#votesData$ABS <- with(votos2011, Total.censo.electoral - Votos.validos) ##abstention
+ 
+#Max <- apply(votesData, 1, max)
+#whichMax <- apply(votesData,  1, function(x)names(votesData)[which.max(x)])
+ 
+## OTH for everything but PP, PSOE and ABS
+#whichMax[!(whichMax %in% c('PP',  'PSOE', 'ABS'))] <- 'OTH'
+ 
+## Finally, I calculate the percentage of votes with the electoral census
+#pcMax <- Max/votos2011$Total.censo.electoral * 100
+```
+
+# EOF
