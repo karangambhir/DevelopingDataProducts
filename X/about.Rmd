@@ -7,4 +7,4 @@ This Shiny application is part of the Developing Data Products Coursera course p
 
 We predict an iris flower species using a prediction model trained on the 'iris' databset. <https://en.wikipedia.org/wiki/Iris_flower_data_set>
 
-Submitted June 26, 2016.
+Submitted July 12, 2017.
